@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador Animales</title>
+    <link rel="stylesheet" href="static/styles.css" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Clasificador de Animales</h1>
+    </header>
+
+    <div class="nav-bg">
+        <nav class="navegacion-principal contenedor">
+                <a href="/">Clasificar animales <strong>(GENERAL)</strong></a>
+                <a href="/clasificador_perros">Clasificar perros</a>
+                <a href="/clasificador_mariposas">Clasificar mariposas</a>
+                <a href="/clasificador_aves">Clasificar aves</a>
+        </nav>
+    </div>
+
+    <div>
+
+        <div class="section_1">
+
+            <div>
+                <p>El modelo de clasificacion de <strong>perros</strong> es capaz de detectar las siguientes razas:</p>
+
+                <ul class="lista_animales">
+                    <li>American Stafforshire</li>
+                    <li>Beagle</li>
+                    <li>Border Collie</li>
+                    <li>Chihuahua</li>
+                    <li>Doberman</li>
+                    <li>Bulldog Frances</li>
+                    <li>Labrador</li>
+                    <li>Rottweiler</li>
+                    <li>Toy Terrier</li>
+                    <li>Yorkshire Terrier</li>
+                </ul>
+            </div>
+            
+
+            <div class="clase-predicha">
+                <img class="clase-predicha__imagen" id="clase-predicha__imagen" style="display: none;">
+
+                <p class="clase-predicha__texto" id="clase-predicha__texto" style="display: none;">Resultado modelo: <strong><span id="resultado" class="resultado"></span></strong></p>
+            </div>
+
+        </div>
+
+        <section class="section_formulario">
+            <p>¡Prueba a subir una imagen al formulario!</p>
+
+
+            <div class="cuadro_formulario">
+                <form action="/clasificarImagen_perros" method="post" enctype="multipart/form-data">
+                    <h2 class="form__title">Detecta al animal de la imagen</h2>
+                    
+                    
+                    <div class="form__container">
+                        <div class="div-imagen">
+                            <input type="file" name="imagen" id="imagen" accept="image/*">
+                        </div>
+    
+                        <div class="botones">
+                            <input class="botones__enviar" type="submit" value="Subir Imagen">
+                            <input class="botones__limpiar" type="reset" value="Limpiar">
+                        </div>
+                    </div>
+
+                </form>
+    
+            </div>
+
+            <div class="flecha-animada" id="flecha-animada"></div>
+
+
+            <div class="imagen">
+                <img class="imagen-cargada" id="imagen-cargada" style="display: none;" />
+            </div>
+
+
+        </section>
+
+        <section class="apartado_info_animal" id="apartado_info_animal" style="display: none;">
+            <h3>Informacion relacionada</h3>
+
+            <p class="text_animal">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </section>
+
+    </div>
+
+
+
+    <script>
+        // Obtén una referencia al elemento de entrada de archivo
+        const inputImagen = document.getElementById('imagen');
+        
+        // Obtén una referencia al elemento de imagen donde se mostrará la imagen cargada
+        const imagenCargada = document.getElementById('imagen-cargada');
+    
+        // Obtén una referencia al botón "Limpiar"
+        const botonLimpiar = document.querySelector('input[type="reset"]');
+
+        const imagenClasePredicha = document.getElementById('clase-predicha__imagen');
+
+        const textoClasePredicha = document.getElementById('clase-predicha__texto')
+
+        const resultado = document.getElementById('resultado')
+
+        
+
+        $(document).ready(function() {
+        // Agrega un evento submit al formulario para manejar el envío con AJAX
+        $('form').submit(function(event) {
+            event.preventDefault(); // Evita el comportamiento de envío normal del formulario
+
+            // Obtiene los datos del formulario
+            var formData = new FormData($(this)[0]);
+
+            // Envía la solicitud al servidor usando AJAX
+            $.ajax({
+                url: '/clasificarImagen_perros',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(etiquetaPredicha) {
+                    
+                    // Formatea la URL de la imagen local con el nombre del archivo dinámico
+                    var urlImagenLocal = '/static/images/imagenesAnimalesClasificados_perros/' + etiquetaPredicha + '.jpg';
+
+                    // Asigna la URL de la imagen local al elemento de imagen
+                    //imagenClasePredicha.src = urlImagenLocal;
+
+                    // Muestra la respuesta en el HTML sin recargar la página
+                    $('#resultado').text(etiquetaPredicha);
+                    $('#clase-predicha__imagen').attr('src', urlImagenLocal);
+                    $('#clase-predicha__imagen').show();
+                    $('#clase-predicha__texto').show();
+                    $('#apartado_info_animal').show();
+                },
+                error: function(error) {
+                    console.error('Error en la solicitud AJAX: ', error);
+                }
+            });
+        });
+
+        // Agrega un evento change al elemento de entrada de archivo para detectar cuando se carga una imagen
+        $('#imagen').change(function(event) {
+            // Verifica si se ha seleccionado una imagen
+            if (event.target.files.length > 0) {
+                // Obtén la URL de la imagen cargada
+                const imageUrl = URL.createObjectURL(event.target.files[0]);
+
+                // Muestra la imagen en el elemento de imagen
+                $('#imagen-cargada').attr('src', imageUrl);
+                $('#imagen-cargada').show();
+
+                // Muestra la flecha animada
+                $('#flecha-animada').show();
+            } else {
+                // Oculta la flecha animada si no hay imagen seleccionada
+                $('#flecha-animada').hide();
+            }
+        });
+
+        // Agrega un evento click al botón "Limpiar" para ocultar la imagen
+        $('input[type="reset"]').click(function() {
+            // Oculta la imagen
+            $('#imagen-cargada').hide();
+            $('#flecha-animada').hide();
+            $('#clase-predicha__imagen').hide();
+            $('#clase-predicha__texto').hide();
+            $('#apartado_info_animal').hide();
+        });
+    });
+
+    </script>
+
+    
+</body>
+
+
+</html>
